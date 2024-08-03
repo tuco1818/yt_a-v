@@ -4,25 +4,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube Downloader</title>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        input, select, button { width: 100%; margin: 10px 0; }
+        #result { margin-top: 20px; }
+    </style>
 </head>
 <body>
     <h1>YouTube Downloader</h1>
     <form id="downloadForm">
-        <label for="url">YouTube URL:</label>
-        <input type="text" id="url" name="url" required>
-        
-        <label for="type">Content Type:</label>
-        <select id="type" name="type">
+        <label for="contentType">Content Type:</label>
+        <select id="contentType" name="contentType" required>
+            <option value="">Select content type</option>
             <option value="audio">Audio</option>
             <option value="visual">Visual</option>
+            <option value="mobile">Mobile</option>
         </select>
+
+        <label for="url">YouTube URL:</label>
+        <input type="text" id="url" name="url" placeholder="Paste the YouTube URL" required>
         
-        <button type="submit">Generate Download Command</button>
+        <button type="submit">Generate Download Link</button>
     </form>
     
     <div id="result"></div>
     
-    <script src="script.js"></script>
+    <script>
+        document.getElementById('downloadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const contentType = document.getElementById('contentType').value;
+            const url = document.getElementById('url').value.trim();
+            const resultDiv = document.getElementById('result');
+            
+            if (contentType === 'mobile') {
+                resultDiv.innerHTML = '<p>Sorry, this feature is unavailable for mobile devices.</p>';
+                return;
+            }
+
+            if (contentType && url) {
+                fetch('https://your-backend-url.com/download', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url, contentType })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        resultDiv.innerHTML = `
+                            <p>Your download is ready!</p>
+                            <a href="${data.downloadLink}" download>Tap here to download your file</a>
+                        `;
+                    } else {
+                        resultDiv.innerHTML = `<p>Error: ${data.message}</p>`;
+                    }
+                })
+                .catch(error => {
+                    resultDiv.innerHTML = `<p>Failed to process your request. Please try again later.</p>`;
+                });
+            } else {
+                resultDiv.innerHTML = '<p>Please fill out all fields.</p>';
+            }
+        });
+    </script>
 </body>
 </html>
